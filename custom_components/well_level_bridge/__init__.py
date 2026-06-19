@@ -13,29 +13,47 @@ from .const import (
     CONF_CONNECT_ON_START,
     CONF_DELIMITER,
     CONF_DERIVATIVE_THRESHOLD,
-    CONF_FALLBACK_TOKEN_INDEX,
     CONF_INVERT_SIGN,
     CONF_MAX_VALUE,
     CONF_MIN_VALUE,
-    CONF_PRIMARY_TOKEN_INDEX,
     CONF_UPDATE_INTERVAL,
     CONF_WINDOW_SIZE,
     DEFAULT_CONNECT_ON_START,
     DEFAULT_DELIMITER,
     DEFAULT_DERIVATIVE_THRESHOLD,
-    DEFAULT_FALLBACK_TOKEN_INDEX,
     DEFAULT_HOST,
     DEFAULT_INVERT_SIGN,
     DEFAULT_MAX_VALUE,
     DEFAULT_MIN_VALUE,
     DEFAULT_PORT,
-    DEFAULT_PRIMARY_TOKEN_INDEX,
     DEFAULT_UPDATE_INTERVAL,
     DEFAULT_WINDOW_SIZE,
     DOMAIN,
 )
 
 PLATFORMS: list[Platform] = [Platform.SENSOR]
+_LEGACY_TOKEN_KEYS = ("primary_token_index", "fallback_token_index")
+
+
+async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Migrate legacy token-index options out of existing entries."""
+
+    if entry.version > 2:
+        return False
+
+    data = dict(entry.data)
+    options = dict(entry.options)
+    changed = False
+    for key in _LEGACY_TOKEN_KEYS:
+        changed = data.pop(key, None) is not None or changed
+        changed = options.pop(key, None) is not None or changed
+
+    if changed or entry.version != 2:
+        hass.config_entries.async_update_entry(
+            entry, data=data, options=options, version=2
+        )
+
+    return True
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -77,12 +95,6 @@ def _config_from_entry(entry: ConfigEntry) -> BridgeConfig:
         host=str(data.get(CONF_HOST, DEFAULT_HOST)).strip(),
         port=int(data.get(CONF_PORT, DEFAULT_PORT)),
         delimiter=str(data.get(CONF_DELIMITER, DEFAULT_DELIMITER)),
-        primary_token_index=int(
-            data.get(CONF_PRIMARY_TOKEN_INDEX, DEFAULT_PRIMARY_TOKEN_INDEX)
-        ),
-        fallback_token_index=int(
-            data.get(CONF_FALLBACK_TOKEN_INDEX, DEFAULT_FALLBACK_TOKEN_INDEX)
-        ),
         invert_sign=bool(data.get(CONF_INVERT_SIGN, DEFAULT_INVERT_SIGN)),
         connect_on_start=bool(
             data.get(CONF_CONNECT_ON_START, DEFAULT_CONNECT_ON_START)

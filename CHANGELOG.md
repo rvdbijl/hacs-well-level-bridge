@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.0.4
+
+- Remove configurable token index parsing entirely.
+- Parse only the numeric value immediately before the `Ft` unit.
+- Add config-entry migration to remove legacy token-index options from existing entries.
+- Average all parsed samples collected during each publish interval before updating the raw sensor and filter pipeline.
+
 ## v0.0.3
 
 - Parse the numeric well-level value immediately before the `Ft` unit before falling back to token indexes.

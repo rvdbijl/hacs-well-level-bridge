@@ -23,7 +23,7 @@ Both sensors use:
 - state class: `measurement`
 - unit: `ft`
 
-The filtered sensor is the production-quality value. The raw sensor shows the parsed, sign-adjusted value before range and delta filtering.
+The filtered sensor is the production-quality value. The raw sensor shows the interval-averaged, sign-adjusted value before range and delta filtering.
 
 ## Filtering Behavior
 
@@ -34,8 +34,6 @@ The default settings mirror the existing Node-RED flow:
 | TCP host | `192.168.10.4` |
 | TCP port | `9001` |
 | Frame delimiter | `>>` |
-| Primary token index | `6` |
-| Fallback token index | `7` |
 | Invert parsed value | `true` |
 | Filtered update interval | `5` seconds |
 | Moving average window | `200` samples |
@@ -43,7 +41,7 @@ The default settings mirror the existing Node-RED flow:
 | Maximum accepted filtered value | `-60 ft` |
 | Maximum filtered delta | `5 ft` |
 
-The parser first reads the numeric value immediately before the `Ft` unit. If that pattern is not present, it falls back to the primary and fallback token indexes above. These settings are available in the initial setup flow and can be changed later from the integration's Options menu.
+The parser reads the numeric value immediately before the `Ft` unit. All valid parsed samples collected during each update interval are averaged before the raw sensor and long moving-average filter update. These settings are available in the initial setup flow and can be changed later from the integration's Options menu.
 
 ## Preserving Existing Well History
 
@@ -85,6 +83,6 @@ HACS tracks GitHub releases. New versions are published as tagged releases such 
 ## Troubleshooting
 
 - If the integration cannot connect, confirm Node-RED is disconnected from the serial bridge.
-- If values are unavailable, check that the frame delimiter and token indexes match the serial device output.
+- If values are unavailable, check that the frame delimiter matches the serial device output and that frames contain a numeric value immediately before `Ft`.
 - If filtered values do not update but raw values do, inspect sensor attributes for `last_reject_reason`.
 - Use **Connect on start: off** as a safe rollback position, then re-enable the Node-RED flow.

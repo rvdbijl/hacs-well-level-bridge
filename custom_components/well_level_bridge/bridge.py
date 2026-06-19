@@ -22,13 +22,11 @@ from .const import (
     DEFAULT_CONNECT_ON_START,
     DEFAULT_DELIMITER,
     DEFAULT_DERIVATIVE_THRESHOLD,
-    DEFAULT_FALLBACK_TOKEN_INDEX,
     DEFAULT_HOST,
     DEFAULT_INVERT_SIGN,
     DEFAULT_MAX_VALUE,
     DEFAULT_MIN_VALUE,
     DEFAULT_PORT,
-    DEFAULT_PRIMARY_TOKEN_INDEX,
     DEFAULT_UPDATE_INTERVAL,
     DEFAULT_WINDOW_SIZE,
 )
@@ -46,8 +44,6 @@ class BridgeConfig:
     host: str = DEFAULT_HOST
     port: int = DEFAULT_PORT
     delimiter: str = DEFAULT_DELIMITER
-    primary_token_index: int = DEFAULT_PRIMARY_TOKEN_INDEX
-    fallback_token_index: int = DEFAULT_FALLBACK_TOKEN_INDEX
     invert_sign: bool = DEFAULT_INVERT_SIGN
     connect_on_start: bool = DEFAULT_CONNECT_ON_START
     window_size: int = DEFAULT_WINDOW_SIZE
@@ -75,9 +71,9 @@ class WellLevelBridge:
         self.connected = False
 
         self._values: deque[float] = deque(maxlen=max(1, config.window_size))
+        self._interval_values: list[float] = []
         self._last_filtered_candidate: float | None = None
         self._last_raw_emit = 0.0
-        self._last_filtered_emit = 0.0
         self._listeners: set[FrameCallback] = set()
         self._stop_event = asyncio.Event()
         self._task: asyncio.Task[None] | None = None
@@ -212,27 +208,26 @@ class WellLevelBridge:
             return
 
         raw_value = -parsed_value if self.config.invert_sign else parsed_value
-        now = dt_util.utcnow()
+        self._interval_values.append(raw_value)
         loop_now = self.hass.loop.time()
-        should_emit_raw = (
+        should_emit = (
             self._last_raw_emit == 0.0
             or loop_now - self._last_raw_emit >= self.config.update_interval
         )
-        if should_emit_raw:
-            self._last_raw_emit = loop_now
-            self.raw_value = round(raw_value, 2)
-            self.last_raw_update = now
-        self._values.append(raw_value)
-        should_filter = (
-            self._last_filtered_emit == 0.0
-            or loop_now - self._last_filtered_emit >= self.config.update_interval
-        )
-        if not should_filter:
+        if not should_emit:
             self.last_reject_reason = None
             self._notify_listeners()
             return
 
-        self._last_filtered_emit = loop_now
+        now = dt_util.utcnow()
+        interval_average = round(
+            sum(self._interval_values) / len(self._interval_values), 2
+        )
+        self._interval_values.clear()
+        self._last_raw_emit = loop_now
+        self.raw_value = interval_average
+        self.last_raw_update = now
+        self._values.append(interval_average)
         moving_average = round(sum(self._values) / len(self._values), 2)
 
         if not self.config.min_value <= moving_average <= self.config.max_value:
@@ -262,20 +257,6 @@ class WellLevelBridge:
                 return float(unit_match.group(1))
             except ValueError:
                 pass
-
-        # Fallback: match Node-RED's JavaScript split(" ") behavior, which
-        # preserves empty fields created by repeated spaces.
-        parts = frame.strip().split(" ")
-        for index in (self.config.primary_token_index, self.config.fallback_token_index):
-            if index < 0 or len(parts) <= index:
-                continue
-            cleaned = re.sub(r"[^0-9.-]", "", parts[index]).strip()
-            if not cleaned:
-                continue
-            try:
-                return float(cleaned)
-            except ValueError:
-                continue
         return None
 
     @callback

@@ -14,23 +14,19 @@ from .const import (
     CONF_CONNECT_ON_START,
     CONF_DELIMITER,
     CONF_DERIVATIVE_THRESHOLD,
-    CONF_FALLBACK_TOKEN_INDEX,
     CONF_INVERT_SIGN,
     CONF_MAX_VALUE,
     CONF_MIN_VALUE,
-    CONF_PRIMARY_TOKEN_INDEX,
     CONF_UPDATE_INTERVAL,
     CONF_WINDOW_SIZE,
     DEFAULT_CONNECT_ON_START,
     DEFAULT_DELIMITER,
     DEFAULT_DERIVATIVE_THRESHOLD,
-    DEFAULT_FALLBACK_TOKEN_INDEX,
     DEFAULT_HOST,
     DEFAULT_INVERT_SIGN,
     DEFAULT_MAX_VALUE,
     DEFAULT_MIN_VALUE,
     DEFAULT_PORT,
-    DEFAULT_PRIMARY_TOKEN_INDEX,
     DEFAULT_UPDATE_INTERVAL,
     DEFAULT_WINDOW_SIZE,
     DOMAIN,
@@ -54,18 +50,6 @@ def _bridge_schema(defaults: dict[str, Any]) -> vol.Schema:
                 CONF_DELIMITER,
                 default=defaults.get(CONF_DELIMITER, DEFAULT_DELIMITER),
             ): str,
-            vol.Required(
-                CONF_PRIMARY_TOKEN_INDEX,
-                default=defaults.get(
-                    CONF_PRIMARY_TOKEN_INDEX, DEFAULT_PRIMARY_TOKEN_INDEX
-                ),
-            ): vol.All(vol.Coerce(int), vol.Range(min=0)),
-            vol.Required(
-                CONF_FALLBACK_TOKEN_INDEX,
-                default=defaults.get(
-                    CONF_FALLBACK_TOKEN_INDEX, DEFAULT_FALLBACK_TOKEN_INDEX
-                ),
-            ): vol.All(vol.Coerce(int), vol.Range(min=0)),
             vol.Required(
                 CONF_INVERT_SIGN,
                 default=defaults.get(CONF_INVERT_SIGN, DEFAULT_INVERT_SIGN),
@@ -99,7 +83,7 @@ def _bridge_schema(defaults: dict[str, Any]) -> vol.Schema:
 class WellLevelBridgeConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle config flow for Well Level Bridge."""
 
-    VERSION = 1
+    VERSION = 2
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
