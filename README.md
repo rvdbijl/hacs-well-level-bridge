@@ -41,7 +41,7 @@ The default settings mirror the existing Node-RED flow:
 | Maximum accepted filtered value | `-60 ft` |
 | Maximum filtered delta | `5 ft` |
 
-The parser reads the numeric value immediately before the `Ft` unit. All valid parsed samples collected during each update interval are averaged before the raw sensor and long moving-average filter update. These settings are available in the initial setup flow and can be changed later from the integration's Options menu.
+The parser reads the numeric value immediately before the `Ft` unit. All valid parsed samples collected during each update interval are averaged before the raw sensor updates. The filtered sensor only admits interval averages that pass the accepted range and delta checks. These settings are available in the initial setup flow and can be changed later from the integration's Options menu.
 
 ## Preserving Existing Well History
 

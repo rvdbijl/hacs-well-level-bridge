@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.0.5
+
+- Reject outlier interval averages before they enter the moving-average filter window.
+- Compare delta rejection against the last accepted interval average, not the already-smoothed value.
+
 ## v0.0.4
 
 - Remove configurable token index parsing entirely.

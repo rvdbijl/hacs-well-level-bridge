@@ -72,7 +72,7 @@ class WellLevelBridge:
 
         self._values: deque[float] = deque(maxlen=max(1, config.window_size))
         self._interval_values: list[float] = []
-        self._last_filtered_candidate: float | None = None
+        self._last_accepted_interval_average: float | None = None
         self._last_raw_emit = 0.0
         self._listeners: set[FrameCallback] = set()
         self._stop_event = asyncio.Event()
@@ -227,22 +227,21 @@ class WellLevelBridge:
         self._last_raw_emit = loop_now
         self.raw_value = interval_average
         self.last_raw_update = now
-        self._values.append(interval_average)
-        moving_average = round(sum(self._values) / len(self._values), 2)
-
-        if not self.config.min_value <= moving_average <= self.config.max_value:
+        if not self.config.min_value <= interval_average <= self.config.max_value:
             self.last_reject_reason = "outside_accepted_range"
             self._notify_listeners()
             return
 
-        if self._last_filtered_candidate is not None:
-            delta = abs(moving_average - self._last_filtered_candidate)
+        if self._last_accepted_interval_average is not None:
+            delta = abs(interval_average - self._last_accepted_interval_average)
             if delta > self.config.derivative_threshold:
                 self.last_reject_reason = "delta_too_high"
                 self._notify_listeners()
                 return
 
-        self._last_filtered_candidate = moving_average
+        self._last_accepted_interval_average = interval_average
+        self._values.append(interval_average)
+        moving_average = round(sum(self._values) / len(self._values), 2)
         self.filtered_value = moving_average
         self.last_filtered_update = now
         self.last_reject_reason = None
