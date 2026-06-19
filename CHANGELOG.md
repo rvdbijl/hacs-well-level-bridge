@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.0.3
+
+- Parse the numeric well-level value immediately before the `Ft` unit before falling back to token indexes.
+- Keep token-index parsing as a compatibility fallback for alternate frame formats.
+
 ## v0.0.2
 
 - Fix well frame parsing to match the previous Node-RED flow's literal-space token splitting.

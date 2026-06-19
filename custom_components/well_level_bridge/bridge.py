@@ -34,6 +34,7 @@ from .const import (
 )
 
 _LOGGER = logging.getLogger(__name__)
+_VALUE_BEFORE_FT = re.compile(r"([-+]?(?:\d+(?:\.\d*)?|\.\d+))\s*ft\b", re.IGNORECASE)
 
 FrameCallback = Callable[[], None]
 
@@ -253,11 +254,17 @@ class WellLevelBridge:
         self._notify_listeners()
 
     def _parse_frame(self, frame: str) -> float | None:
-        """Parse the same token pattern used by the Node-RED flow."""
+        """Parse the well-level value from an incoming text frame."""
 
-        # Match Node-RED's JavaScript split(" ") behavior, which preserves empty
-        # fields created by repeated spaces in frames such as:
-        # "2026/06/19 11:38:45  0 D   74.27 Ft".
+        unit_match = _VALUE_BEFORE_FT.search(frame)
+        if unit_match is not None:
+            try:
+                return float(unit_match.group(1))
+            except ValueError:
+                pass
+
+        # Fallback: match Node-RED's JavaScript split(" ") behavior, which
+        # preserves empty fields created by repeated spaces.
         parts = frame.strip().split(" ")
         for index in (self.config.primary_token_index, self.config.fallback_token_index):
             if index < 0 or len(parts) <= index:

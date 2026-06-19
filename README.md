@@ -43,7 +43,7 @@ The default settings mirror the existing Node-RED flow:
 | Maximum accepted filtered value | `-60 ft` |
 | Maximum filtered delta | `5 ft` |
 
-These settings are available in the initial setup flow and can be changed later from the integration's Options menu.
+The parser first reads the numeric value immediately before the `Ft` unit. If that pattern is not present, it falls back to the primary and fallback token indexes above. These settings are available in the initial setup flow and can be changed later from the integration's Options menu.
 
 ## Preserving Existing Well History
 
