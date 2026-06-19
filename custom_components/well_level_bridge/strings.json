@@ -1,0 +1,72 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Well Level Bridge",
+        "description": "Configure the TCP serial bridge and filtering behavior. Leave connection disabled until Node-RED is no longer connected to the serial bridge.",
+        "data": {
+          "host": "TCP bridge host",
+          "port": "TCP bridge port",
+          "connect_on_start": "Connect on start",
+          "delimiter": "Frame delimiter",
+          "primary_token_index": "Primary token index",
+          "fallback_token_index": "Fallback token index",
+          "invert_sign": "Invert parsed value",
+          "update_interval": "Filtered update interval in seconds",
+          "window_size": "Moving-average sample count",
+          "min_value": "Minimum accepted filtered value",
+          "max_value": "Maximum accepted filtered value",
+          "derivative_threshold": "Maximum accepted filtered delta"
+        },
+        "data_description": {
+          "connect_on_start": "Disable this while Node-RED is still using the TCP bridge. The bridge accepts only one TCP client.",
+          "primary_token_index": "Zero-based whitespace token index used first. The existing Node-RED flow uses 6.",
+          "fallback_token_index": "Zero-based whitespace token index used when the primary token is empty. The existing Node-RED flow uses 7.",
+          "update_interval": "Rate limit for filtered sensor updates. The existing Node-RED flow uses 5 seconds.",
+          "window_size": "Moving average window. The existing Node-RED flow uses 200 samples.",
+          "derivative_threshold": "Filtered values are rejected when the delta from the last accepted filtered value is larger than this many feet."
+        }
+      }
+    },
+    "error": {
+      "host_required": "Host is required.",
+      "delimiter_required": "Delimiter is required.",
+      "invalid_range": "Minimum accepted value must be lower than maximum accepted value."
+    },
+    "abort": {
+      "already_configured": "This bridge is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Well Level Bridge Options",
+        "description": "Update TCP, parsing, and filtering settings. Changing options reloads the integration.",
+        "data": {
+          "host": "TCP bridge host",
+          "port": "TCP bridge port",
+          "connect_on_start": "Connect on start",
+          "delimiter": "Frame delimiter",
+          "primary_token_index": "Primary token index",
+          "fallback_token_index": "Fallback token index",
+          "invert_sign": "Invert parsed value",
+          "update_interval": "Filtered update interval in seconds",
+          "window_size": "Moving-average sample count",
+          "min_value": "Minimum accepted filtered value",
+          "max_value": "Maximum accepted filtered value",
+          "derivative_threshold": "Maximum accepted filtered delta"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "raw": {
+        "name": "Raw"
+      },
+      "filtered": {
+        "name": "Filtered"
+      }
+    }
+  }
+}
