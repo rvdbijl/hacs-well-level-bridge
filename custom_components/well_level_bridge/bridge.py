@@ -255,7 +255,10 @@ class WellLevelBridge:
     def _parse_frame(self, frame: str) -> float | None:
         """Parse the same token pattern used by the Node-RED flow."""
 
-        parts = frame.strip().split()
+        # Match Node-RED's JavaScript split(" ") behavior, which preserves empty
+        # fields created by repeated spaces in frames such as:
+        # "2026/06/19 11:38:45  0 D   74.27 Ft".
+        parts = frame.strip().split(" ")
         for index in (self.config.primary_token_index, self.config.fallback_token_index):
             if index < 0 or len(parts) <= index:
                 continue

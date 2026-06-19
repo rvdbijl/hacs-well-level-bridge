@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.0.2
+
+- Fix well frame parsing to match the previous Node-RED flow's literal-space token splitting.
+- Prevent valid frames with repeated spaces from being rejected as `unparsable_frame`.
+
 ## v0.0.1
 
 - Initial HACS-compatible release.
